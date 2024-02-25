@@ -2,12 +2,12 @@ import pyautogui
 import time
 import keyboard
 
-# Ask the user to hover over the top-left corner of the game area and press 's'
+# Hover over the top-left corner of the game area and press 's'
 print("Hover over the top-left corner of the game area and press 's'.")
 keyboard.wait('s')
 top_left_x, top_left_y = pyautogui.position()
 
-# Ask the user to hover over the bottom-right corner of the game area and press 's'
+# Hover over the bottom-right corner of the game area and press 's'
 print("Now hover over the bottom-right corner of the game area and press 's'.")
 keyboard.wait('s')
 bottom_right_x, bottom_right_y = pyautogui.position()
