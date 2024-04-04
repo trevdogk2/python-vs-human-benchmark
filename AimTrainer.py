@@ -1,7 +1,15 @@
 import pyautogui
 import time
 import keyboard
+import numpy as np
+from mss import mss
 
+# Disable PyAutoGUI's failsafe
+pyautogui.FAILSAFE = False
+pyautogui.MINIMUM_DURATION = 0.0
+pyautogui.MINIMUM_SLEEP = 0.0
+
+# Use a window width of 1009px
 # Hover over the top-left corner of the game area and press 's'
 print("Hover over the top-left corner of the game area and press 's'.")
 keyboard.wait('s')
@@ -16,32 +24,84 @@ bottom_right_x, bottom_right_y = pyautogui.position()
 width = bottom_right_x - top_left_x
 height = bottom_right_y - top_left_y
 
-# Generate a list of all (x, y) coordinates in the search space
-coordinates = [(x, y) for x in range(0, width, 5) for y in range(0, height, 5)]
+# Create an MSS object for taking screenshots
+sct = mss()
+
+# Define the monitor region to capture
+monitor = {"top": top_left_y, "left": top_left_x, "width": width, "height": height}
 
 # The target color to look for (white in this case)
 target_color = (149, 195, 232)
 
 print("Hover over a target and press 's' to start the clicking.")
 keyboard.wait('s')
-
 pyautogui.click()
-
 click_count = 0
-while click_count < 35:
-      # Take a new screenshot of the specified region to get the latest target positions
-      screenshot = pyautogui.screenshot(region=(top_left_x, top_left_y, width, height))
+step = 69
 
-      for x, y in coordinates:
-            pixel_color = screenshot.getpixel((x, y))
 
-            if pixel_color == target_color:
-                  pyautogui.click(top_left_x + x, top_left_y + y)
-                  click_count += 1
-                  # A delay here might be necessary to allow the target to move and the game to update
-                  # especially if the game has animations or a delay before a new target appears.
-                  time.sleep(0.01)
-                  break  # Break after clicking to take a new screenshot
+# Take a screenshot of the specified region
+screenshot = sct.grab(monitor)
+
+# Convert the screenshot to a numpy array
+img = np.array(screenshot)
+
+print("Screenshot shape:", img.shape)
+print("Screenshot data type:", img.dtype)
+print("Screenshot:\n", img)
+
+# Select the RGB channels of the image
+img_rgb = img[:, :, :3]
+
+print("RGB channels shape:", img_rgb.shape)
+print("RGB channels data type:", img_rgb.dtype)
+print("RGB channels:\n", img_rgb)
+
+# Compare each pixel's RGB values with the target color
+color_match = img_rgb == target_color
+
+print("Color match shape:", color_match.shape)
+print("Color match data type:", color_match.dtype)
+print("Color match:\n", color_match)
+
+# Check if all three color channels match the target color for each pixel
+all_match = np.all(color_match, axis=-1)
+
+print("All match shape:", all_match.shape)
+print("All match data type:", all_match.dtype)
+print("All match:\n", all_match)
+
+# Find the indices of the matching pixels
+target_indices = np.where(all_match)
+
+print("Target indices:", target_indices)
+# while click_count < 35:
+#       # Take a screenshot of the specified region
+#       screenshot = sct.grab(monitor)
       
+#       # Convert the screenshot to a numpy array
+#       img = np.array(screenshot)
+#       print('===')
+#       print('===')
+#       print('===')
+#       print('===')
+#       print('===')
+#       print('===')
+#       print(img)
+      
+#       # Find the first occurrence of the target color
+#       target_index = np.where(np.all(img[:, :, :3] == target_color, axis=-1))
+      
+#       if len(target_index[0]) > 0:
+#             # Get the first target pixel location
+#             target_y, target_x = target_index[0][0], target_index[1][0]
+            
+#             # Click on the target pixel
+#             pyautogui.click(top_left_x + target_x, top_left_y + target_y)
+#             click_count += 1
+#             time.sleep(0.005)  # Adjust the sleep duration as needed
+        
+#       if click_count >= 35:
+#         break
 
 print("All targets clicked!")
